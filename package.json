@@ -1,5 +1,5 @@
 {
-  "name": "wallet-tracker",
+  "name": "wallet-tx-checker",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,15 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "next": "15.3.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "15.3.0"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.0",
-    "@eslint/eslintrc": "^3"
+    "express": "^5.1.0",
+    "tailwindcss": "^4"
   }
 }
