@@ -2,7 +2,7 @@ import { CHAINS } from "@/utils/chainMap";
 
 export default function ChainSelector({ selectedChains, onSelectedChainsChange }) {
   return (
-    <div className="flex gap-4">
+    <div className="flex flex-wrap gap-4">
       {CHAINS.map(({ id, name }) => (
         <label key={id} className="inline-flex items-center">
           <input

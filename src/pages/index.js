@@ -1,5 +1,17 @@
 import { useState } from "react";
 import ChainSelector from "@/components/ChainSelector";
+import { CHAINS } from "@/utils/chainMap";
+
+
+function getExplorerLink(chainId, hash) {
+  const chain = CHAINS.find(c => c.id === parseInt(chainId));
+  return chain?.getTxUrl(hash) || "#";
+}
+
+function getChainName(chainId) {
+  const chain = CHAINS.find(c => c.id === parseInt(chainId));
+  return chain?.name || "Unknown";
+}
 
 async function fetchTransactionsFromServer(address, chains) {
   const query = new URLSearchParams({
@@ -23,15 +35,39 @@ async function fetchTransactionsFromServer(address, chains) {
   }
 }
 
+async function fetchBalancesFromServer(address, chains) {
+  const query = new URLSearchParams({
+    address,
+    chains: chains.join(',')
+  });
+
+  const isDev = process.env.NODE_ENV === 'development';
+  const endpoint = isDev
+        ? "http://localhost:5000/api/fetchBalances"
+        : "/api/fetchBalances";
+  const url = `${endpoint}?${query.toString()}`;
+
+  try {
+    const res = await fetch(url, {method: "POST"});
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Fetch error:", error.message);
+    return [];
+  }
+}
+
 export default function Home() {
   const [address, setAddress] = useState("0xE09b13f723f586bc2D98aa4B0F2C27A0320D20AB");
   const [selectedChains, setSelectedChains] = useState([]);
   const [incoming, setIncoming] = useState([]);
   const [outgoing, setOutgoing] = useState([]);
-  const [isFetching, setIsFetching] = useState(false);
+  const [balances, setBalances] = useState([]);
+  const [isFetchingTxs, setIsFetchingTxs] = useState(false);
+  const [isFetchingBals, setIsFetchingBals] = useState(false);
 
   async function fetchTxs() {
-    setIsFetching(true);
+    setIsFetchingTxs(true);
     let allIncoming = [];
     let allOutgoing = [];
     
@@ -46,7 +82,17 @@ export default function Home() {
 
     setIncoming(allIncoming);
     setOutgoing(allOutgoing);
-    setIsFetching(false);
+    setIsFetchingTxs(false);
+  }
+  
+  async function fetchBals() {
+    setIsFetchingBals(true);
+    
+    let bals = await fetchBalancesFromServer(address, selectedChains);
+    bals = bals.map((bal, i) => ({ bal, chainId: selectedChains[i] }));
+    setBalances(bals);
+
+    setIsFetchingBals(false);
   }
 
   return (
@@ -63,15 +109,47 @@ export default function Home() {
 
         <ChainSelector selectedChains={selectedChains} onSelectedChainsChange={setSelectedChains} />
 
-        <button
-          onClick={fetchTxs}
-          disabled={isFetching}
-          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-        >
-          {isFetching ? "Fetching..." : "Fetch"}
-        </button>
+        <div className="flex flex-wrap gap-5">
+          <button
+            onClick={fetchTxs}
+            disabled={isFetchingTxs}
+            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            {isFetchingTxs ? "Fetching..." : "Fetch Txs"}
+          </button>
+          <button
+            onClick={fetchBals}
+            disabled={isFetchingBals}
+            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            {isFetchingBals ? "Fetching..." : "Fetch Bals"}
+          </button>
+        </div>
 
         <div className="mt-8">
+          {balances.length > 0 &&
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Balances</h2>
+              <table className="w-full text-left border mb-8">
+                <thead className="bg-gray-200">
+                  <tr>
+                    <th className="p-2">Currency</th>
+                    <th className="p-2">Balance</th>
+                    <th className="p-2">Chain</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {incoming.map((value, i) => (
+                    <tr key={i} className="border-t">
+                      <td className="p-2">{getChainName(value.chainId)}</td>
+                      <td className="p-2">{(parseFloat(value.bal) / 1e18).toFixed(5)}</td>
+                      <td className="p-2">{getChainName(value.chainId)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          }
           <h2 className="text-xl font-semibold mb-2">Incoming Transactions</h2>
           <table className="w-full text-left border mb-8">
             <thead className="bg-gray-200">
@@ -85,10 +163,10 @@ export default function Home() {
             <tbody>
               {incoming.map((tx, i) => (
                 <tr key={i} className="border-t">
-                  <td className="p-2 truncate max-w-[200px]">{tx.hash}</td>
+                  <td className="p-2 truncate max-w-[200px]"><a href={getExplorerLink(tx.chainId, tx.hash)} target="_blank">{tx.hash}</a></td>
                   <td className="p-2 truncate max-w-[150px]">{tx.from}</td>
-                  <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(4)}</td>
-                  <td className="p-2">{tx.chainId}</td>
+                  <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(5)}</td>
+                  <td className="p-2">{getChainName(tx.chainId)}</td>
                 </tr>
               ))}
             </tbody>
@@ -107,10 +185,10 @@ export default function Home() {
             <tbody>
               {outgoing.map((tx, i) => (
                 <tr key={i} className="border-t">
-                  <td className="p-2 truncate max-w-[200px]">{tx.hash}</td>
-                  <td className="p-2 truncate max-w-[150px]">{tx.to}</td>
-                  <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(4)}</td>
-                  <td className="p-2">{tx.chainId}</td>
+                  <td className="p-2 truncate max-w-[200px]"><a href={getExplorerLink(tx.chainId, tx.hash)} target="_blank">{tx.hash}</a></td>
+                  <td className="p-2 truncate max-w-[150px]">{tx.to || "Contract Creation"}</td>
+                  <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(5)}</td>
+                  <td className="p-2">{getChainName(tx.chainId)}</td>
                 </tr>
               ))}
             </tbody>

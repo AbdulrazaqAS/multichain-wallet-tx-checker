@@ -3,8 +3,8 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { address, chainsStr, start_block=0, end_block=99999999 } = req.query;
-    const chains = chainsStr.split(',') //.map(Number);
+    const { address, chainsStr } = req.query;
+    const chains = chainsStr.split(',')
 
     const apiKey = process.env.ETHERSCAN_API_KEY;
     const baseUrl = "https://api.etherscan.io/v2/api";
@@ -14,11 +14,9 @@ export default async function handler(req, res) {
         const url = `${baseUrl}?
                       chainid=${chain}
                       &module=account
-                      &action=txlist
+                      &action=balance
                       &address=${address}
-                      &startblock=${start_block}
-                      &endblock=${end_block}
-                      &sort=desc
+                      &tag=latest
                       &apikey=${apiKey}`;
     
         try {
@@ -28,14 +26,13 @@ export default async function handler(req, res) {
           if (data.status !== "1") throw new Error(data.result);
     
           results.push(data.result);
-        //   results.push(...data.result.map(tx => ({ ...tx, chainId: chain })));
         } catch (error) {
           console.error(`Error on chain ${chain}:`, error.message);
-          results.push([]);
+          results.push(-1);
         }
     }
     
-    res.status(200).json(data.result);
+    res.status(200).json(results);
     // res.status(200).json(results.flat());
 }
   
