@@ -37,7 +37,7 @@ app.post("/api/fetchTransactions", async (req, res) => {
         //   results.push(...data.result.map(tx => ({ ...tx, chainId: chain })));
         } catch (error) {
           console.error(`Error on chain ${chain}:`, error.message);
-          results.push([]);
+          results.push([{error: error.message}]);
         }
     }
     
@@ -71,7 +71,7 @@ app.post("/api/fetchBalances", async (req, res) => {
         results.push(data.result);
       } catch (error) {
         console.error(`Error on chain ${chain}:`, error.message);
-        results.push(-1);
+        results.push("-1");
       }
   }
   

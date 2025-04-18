@@ -1,7 +1,8 @@
 import { useState } from "react";
-import ChainSelector from "@/components/ChainSelector";
 import { CHAINS } from "@/utils/chainMap";
 
+import ChainSelector from "@/components/ChainSelector";
+import ErrorMessage from "@/components/ErrorMessage";
 
 function getExplorerLink(chainId, hash) {
   const chain = CHAINS.find(c => c.id === parseInt(chainId));
@@ -31,7 +32,7 @@ async function fetchTransactionsFromServer(address, chains) {
     return data;
   } catch (error) {
     console.error("Fetch error:", error.message);
-    return [];
+    throw error;
   }
 }
 
@@ -53,7 +54,7 @@ async function fetchBalancesFromServer(address, chains) {
     return data;
   } catch (error) {
     console.error("Fetch error:", error.message);
-    return [];
+    throw error;
   }
 }
 
@@ -65,39 +66,62 @@ export default function Home() {
   const [balances, setBalances] = useState([]);
   const [isFetchingTxs, setIsFetchingTxs] = useState(false);
   const [isFetchingBals, setIsFetchingBals] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
+  const NoChainSelectedError = new Error("Please select at least one chain");
   async function fetchTxs() {
-    setIsFetchingTxs(true);
-    let allIncoming = [];
-    let allOutgoing = [];
-    
-    const txs = await fetchTransactionsFromServer(address, selectedChains);
-    for (let i=0; i<selectedChains.length; i++) {
-      const chainTxs = txs[i];
-      const incomingTxs = chainTxs.filter(tx => tx.to?.toLowerCase() === address.toLowerCase());
-      const outgoingTxs = chainTxs.filter(tx => tx.from?.toLowerCase() === address.toLowerCase());
-      allIncoming.push(...incomingTxs.map(tx => ({ ...tx, chainId: selectedChains[i] })));
-      allOutgoing.push(...outgoingTxs.map(tx => ({ ...tx, chainId: selectedChains[i] })));
-    }
+    try {
+      if (selectedChains.length === 0) throw NoChainSelectedError;
 
-    setIncoming(allIncoming);
-    setOutgoing(allOutgoing);
-    setIsFetchingTxs(false);
+      setIsFetchingTxs(true);
+      let allIncoming = [];
+      let allOutgoing = [];
+      
+      const txs = await fetchTransactionsFromServer(address, selectedChains);
+      for (let i=0; i<selectedChains.length; i++) {
+        const chainTxs = txs[i];
+
+        if (chainTxs[0]?.error){
+          console.error(new Error(chainTxs[0].error));
+          continue;
+        }
+
+        const incomingTxs = chainTxs.filter(tx => tx.to?.toLowerCase() === address.toLowerCase());
+        const outgoingTxs = chainTxs.filter(tx => tx.from?.toLowerCase() === address.toLowerCase());
+        allIncoming.push(...incomingTxs.map(tx => ({ ...tx, chainId: selectedChains[i] })));
+        allOutgoing.push(...outgoingTxs.map(tx => ({ ...tx, chainId: selectedChains[i] })));
+      }
+
+      setIncoming(allIncoming);
+      setOutgoing(allOutgoing);
+      setIsFetchingTxs(false);
+    } catch(error){
+      setErrorMsg(error.message);
+    } finally {
+      setIsFetchingTxs(false);
+    }
   }
   
   async function fetchBals() {
-    setIsFetchingBals(true);
-    
-    let bals = await fetchBalancesFromServer(address, selectedChains);
-    bals = bals.map((bal, i) => ({ bal, chainId: selectedChains[i] }));
-    setBalances(bals);
+    try {
+      if (selectedChains.length === 0) throw NoChainSelectedError;
 
-    setIsFetchingBals(false);
+        setIsFetchingBals(true);
+        
+        let bals = await fetchBalancesFromServer(address, selectedChains);
+        bals = bals.map((bal, i) => ({ bal, chainId: selectedChains[i] }));
+        setBalances(bals);
+    } catch(error){
+      setErrorMsg(error.message);
+    } finally {
+      setIsFetchingBals(false);
+    }
   }
 
   return (
     <main className="min-h-screen bg-gray-100 p-10">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
+        {errorMsg && <ErrorMessage message={errorMsg} onDismiss={() => {setErrorMsg("")}} />}
         <h1 className="text-2xl font-bold mb-4">Wallet TX Checker</h1>
 
         <input
@@ -139,10 +163,10 @@ export default function Home() {
                   </tr>
                 </thead>
                 <tbody>
-                  {incoming.map((value, i) => (
+                  {balances.map((value, i) => (
                     <tr key={i} className="border-t">
                       <td className="p-2">{getChainName(value.chainId)}</td>
-                      <td className="p-2">{(parseFloat(value.bal) / 1e18).toFixed(5)}</td>
+                      <td className="p-2">{value.bal != "-1" ? (parseFloat(value.bal) / 1e18).toFixed(5) : "-1"}</td>
                       <td className="p-2">{getChainName(value.chainId)}</td>
                     </tr>
                   ))}

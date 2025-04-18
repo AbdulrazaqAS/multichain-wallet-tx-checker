@@ -33,5 +33,9 @@ export const CHAINS = [
     id: 11155111,
     name: "Eth Sepolia",
     getTxUrl: (hash) => `https://sepolia.etherscan.io/tx/${hash}`
+  },
+  {
+    id: -1,
+    name: "Invalid",
   }
 ];
