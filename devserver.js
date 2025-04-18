@@ -2,15 +2,14 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config({ path: ".env.local" });
 
-// dotenv.config();
 const app = express();
 const PORT = 5000;
 
 app.use(cors());
 
 app.post("/api/fetchTransactions", async (req, res) => {
-    const { address, chains, start_block=0, end_block=99999999 } = req.query;
-    const chainsId = chains.split(',').map(Number);
+    const { address, chains, start_block=0, end_block="latest" } = req.query;
+    const chainsId = chains.split(',')
 
     const apiKey = process.env.ETHERSCAN_API_KEY;
     const baseUrl = "https://api.etherscan.io/v2/api";
@@ -24,17 +23,16 @@ app.post("/api/fetchTransactions", async (req, res) => {
             `&address=${address}` +
             `&startblock=${start_block}` +
             `&endblock=${end_block}` +
-            `&sort=asc` +
+            `&sort=desc` +
             `&apikey=${apiKey}`;
 
         try {
           const res = await fetch(url);
           const data = await res.json();
-    
-          if (data.status !== "1") throw new Error(data.result);
+          
+          if (data.status !== "1" && data.result?.length != 0) throw new Error(data.result);  // Not an error due to empty txs
     
           results.push(data.result);
-        //   results.push(...data.result.map(tx => ({ ...tx, chainId: chain })));
         } catch (error) {
           console.error(`Error on chain ${chain}:`, error.message);
           results.push([{error: error.message}]);
@@ -42,12 +40,11 @@ app.post("/api/fetchTransactions", async (req, res) => {
     }
     
     res.status(200).json(results);
-    // res.status(200).json(results.flat());
 });
 
 app.post("/api/fetchBalances", async (req, res) => {
   const { address, chains } = req.query;
-  const chainsId = chains.split(',')//.map(Number);
+  const chainsId = chains.split(',')
 
   const apiKey = process.env.ETHERSCAN_API_KEY;
   const baseUrl = "https://api.etherscan.io/v2/api";

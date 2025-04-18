@@ -14,6 +14,10 @@ function getChainName(chainId) {
   return chain?.name || "Unknown";
 }
 
+function getCurrency(chainId) {
+  return CHAINS.find(c => c.id === parseInt(chainId))?.currency || "Unknown";
+}
+
 async function fetchTransactionsFromServer(address, chains) {
   const query = new URLSearchParams({
     address,
@@ -72,7 +76,8 @@ export default function Home() {
   async function fetchTxs() {
     try {
       if (selectedChains.length === 0) throw NoChainSelectedError;
-
+      
+      setErrorMsg("");  // clear prev error
       setIsFetchingTxs(true);
       let allIncoming = [];
       let allOutgoing = [];
@@ -106,6 +111,7 @@ export default function Home() {
     try {
       if (selectedChains.length === 0) throw NoChainSelectedError;
 
+        setErrorMsg("");  // clear prev error
         setIsFetchingBals(true);
         
         let bals = await fetchBalancesFromServer(address, selectedChains);
@@ -120,7 +126,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gray-100 p-10">
-      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
+      <div className="max-w-max mx-auto bg-white rounded-lg shadow-md p-6">
         {errorMsg && <ErrorMessage message={errorMsg} onDismiss={() => {setErrorMsg("")}} />}
         <h1 className="text-2xl font-bold mb-4">Wallet TX Checker</h1>
 
@@ -157,7 +163,6 @@ export default function Home() {
               <table className="w-full text-left border mb-8">
                 <thead className="bg-gray-200">
                   <tr>
-                    <th className="p-2">Currency</th>
                     <th className="p-2">Balance</th>
                     <th className="p-2">Chain</th>
                   </tr>
@@ -165,8 +170,9 @@ export default function Home() {
                 <tbody>
                   {balances.map((value, i) => (
                     <tr key={i} className="border-t">
-                      <td className="p-2">{getChainName(value.chainId)}</td>
-                      <td className="p-2">{value.bal != "-1" ? (parseFloat(value.bal) / 1e18).toFixed(5) : "-1"}</td>
+                      <td className="p-2">
+                        {value.bal != "-1" ? (parseFloat(value.bal) / 1e18).toFixed(5) : "-1"} {getCurrency(tx.chainId)}
+                      </td>
                       <td className="p-2">{getChainName(value.chainId)}</td>
                     </tr>
                   ))}
@@ -182,15 +188,17 @@ export default function Home() {
                 <th className="p-2">From</th>
                 <th className="p-2">Value</th>
                 <th className="p-2">Chain</th>
+                <th className="p-2">Time</th>
               </tr>
             </thead>
             <tbody>
               {incoming.map((tx, i) => (
                 <tr key={i} className="border-t">
-                  <td className="p-2 truncate max-w-[200px]"><a href={getExplorerLink(tx.chainId, tx.hash)} target="_blank">{tx.hash}</a></td>
-                  <td className="p-2 truncate max-w-[150px]">{tx.from}</td>
-                  <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(5)}</td>
+                  <td className="p-2 underline text-blue-500"><a href={getExplorerLink(tx.chainId, tx.hash)} target="_blank">{tx.hash.slice(0, 10) + "..." +tx.hash.slice(54)}</a></td>
+                  <td className="p-2 truncate">{tx.from}</td>
+                  <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(5)} {getCurrency(tx.chainId)}</td>
                   <td className="p-2">{getChainName(tx.chainId)}</td>
+                  <td className="p-2">{new Date(Number(tx.timeStamp) * 1000).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -204,15 +212,17 @@ export default function Home() {
                 <th className="p-2">To</th>
                 <th className="p-2">Value</th>
                 <th className="p-2">Chain</th>
+                <th className="p-2">Time</th>
               </tr>
             </thead>
             <tbody>
               {outgoing.map((tx, i) => (
                 <tr key={i} className="border-t">
-                  <td className="p-2 truncate max-w-[200px]"><a href={getExplorerLink(tx.chainId, tx.hash)} target="_blank">{tx.hash}</a></td>
-                  <td className="p-2 truncate max-w-[150px]">{tx.to || "Contract Creation"}</td>
-                  <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(5)}</td>
+                  <td className="p-2 underline text-blue-500"><a href={getExplorerLink(tx.chainId, tx.hash)} target="_blank">{tx.hash.slice(0, 10) + "..." +tx.hash.slice(54)}</a></td>
+                  <td className="p-2 truncate">{tx.to || "Contract Creation"}</td>
+                  <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(5)} {getCurrency(tx.chainId)}</td>
                   <td className="p-2">{getChainName(tx.chainId)}</td>
+                  <td className="p-2">{new Date(Number(tx.timeStamp) * 1000).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
