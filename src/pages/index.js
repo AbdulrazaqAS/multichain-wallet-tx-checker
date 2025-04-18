@@ -157,29 +157,25 @@ export default function Home() {
         </div>
 
         <div className="mt-8">
-          {balances.length > 0 &&
-            <div>
-              <h2 className="text-xl font-semibold mb-2">Balances</h2>
-              <table className="w-full text-left border mb-8">
-                <thead className="bg-gray-200">
-                  <tr>
-                    <th className="p-2">Balance</th>
-                    <th className="p-2">Chain</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {balances.map((value, i) => (
-                    <tr key={i} className="border-t">
-                      <td className="p-2">
-                        {value.bal != "-1" ? (parseFloat(value.bal) / 1e18).toFixed(5) : "-1"} {getCurrency(tx.chainId)}
-                      </td>
-                      <td className="p-2">{getChainName(value.chainId)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          }
+          <h2 className="text-xl font-semibold mb-2">Balances</h2>
+          <table className="w-full text-left border mb-8">
+            <thead className="bg-gray-200">
+              <tr>
+                <th className="p-2">Balance</th>
+                <th className="p-2">Chain</th>
+              </tr>
+            </thead>
+            <tbody>
+              {balances.map((tx, i) => (
+                <tr key={i} className="border-t">
+                  <td className="p-2">
+                    {tx.bal != "-1" ? (parseFloat(tx.bal) / 1e18).toFixed(5) : "-1"} {getCurrency(tx.chainId)}
+                  </td>
+                  <td className="p-2">{getChainName(tx.chainId)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
           <h2 className="text-xl font-semibold mb-2">Incoming Transactions</h2>
           <table className="w-full text-left border mb-8">
             <thead className="bg-gray-200">
@@ -194,7 +190,7 @@ export default function Home() {
             <tbody>
               {incoming.map((tx, i) => (
                 <tr key={i} className="border-t">
-                  <td className="p-2 underline text-blue-500"><a href={getExplorerLink(tx.chainId, tx.hash)} target="_blank">{tx.hash.slice(0, 10) + "..." +tx.hash.slice(54)}</a></td>
+                  <td className="p-2 underline text-blue-500"><a href={getExplorerLink(tx.chainId, tx.hash)} target="_blank">{tx.hash.slice(0, 10) + "..." +tx.hash.slice(56)}</a></td>
                   <td className="p-2 truncate">{tx.from}</td>
                   <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(5)} {getCurrency(tx.chainId)}</td>
                   <td className="p-2">{getChainName(tx.chainId)}</td>
@@ -218,7 +214,7 @@ export default function Home() {
             <tbody>
               {outgoing.map((tx, i) => (
                 <tr key={i} className="border-t">
-                  <td className="p-2 underline text-blue-500"><a href={getExplorerLink(tx.chainId, tx.hash)} target="_blank">{tx.hash.slice(0, 10) + "..." +tx.hash.slice(54)}</a></td>
+                  <td className="p-2 underline text-blue-500"><a href={getExplorerLink(tx.chainId, tx.hash)} target="_blank">{tx.hash.slice(0, 10) + "..." +tx.hash.slice(56)}</a></td>
                   <td className="p-2 truncate">{tx.to || "Contract Creation"}</td>
                   <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(5)} {getCurrency(tx.chainId)}</td>
                   <td className="p-2">{getChainName(tx.chainId)}</td>
