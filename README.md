@@ -1,40 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Multi-Chain Wallet TX Checker
 
-## Getting Started
+A web-based tool to **track wallet transactions and balances across multiple blockchains**. Built with **Next.js**, **Tailwind CSS**, and serverless API routes powered by **Etherscan v2 API**, this app provides an easy way to check incoming and outgoing transactions for a given wallet address across several supported chains.
 
-First, run the development server:
+---
+
+## Features
+
+- ✅ Track **incoming** and **outgoing** transactions
+- 🌐 Supports multiple chains (Ethereum, BNB Chain, Polygon, Arbitrum, etc.)
+- 📅 Optional date filtering via block range estimation
+- 🔁 Fetches data from **Etherscan v2 unified API**
+- 🧠 Detects native token (ETH/BNB/MATIC/etc.)
+- 🌐 Auto-detects the block explorer per chain
+- 💡 Clean and responsive UI built with Tailwind CSS
+- 🔒 Serverless backend to protect API keys (Vercel-compatible)
+
+---
+
+## Demo
+[Visit](https://wallet-tx-checker.vercel.app/) the app deployed on Vercel.
+
+---
+
+## Tech Stack
+
+- **Frontend**: React + Next.js + Tailwind CSS
+- **Backend**: Next.js API routes (Serverless)
+- **API**: Etherscan v2 (multi-chain endpoint)
+- **Deployment**: Vercel
+
+---
+
+## Installation
 
 ```bash
+# Clone the repo
+git clone https://github.com/AbdulrazaqAS/multichain-wallet-tx-checker.git
+cd multichain-wallet-tx-checker
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+touch .env.local
+# Add your ETHERSCAN_API_KEY to .env.local
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
+Then visit [http://localhost:3000](http://localhost:3000)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
-
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+## Project Structure
+src/
+├── api/              # Client-side API utility functions
+├── components/       # Reusable React components
+├── pages/            # Next.js pages and API routes
+├── utils/            # Chain definitions, helpers, etc.
