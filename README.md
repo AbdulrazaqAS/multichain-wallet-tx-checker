@@ -49,10 +49,3 @@ touch .env.local
 npm run dev
 ```
 Then visit [http://localhost:3000](http://localhost:3000)
-
-## Project Structure
-src/
-├── api/              # Client-side API utility functions
-├── components/       # Reusable React components
-├── pages/            # Next.js pages and API routes
-├── utils/            # Chain definitions, helpers, etc.
