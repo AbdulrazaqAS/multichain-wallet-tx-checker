@@ -191,8 +191,8 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 p-10 pb-0">
-      <div className="max-w-max mx-auto bg-white rounded-lg shadow-md p-6">
+    <main className="min-h-screen bg-gray-100 p-1 md:p-10 md:pb-0">
+      <div className="max-w-max mx-auto bg-white rounded-lg shadow-md p-1 md:p-6">
         {errorMsg && <ErrorMessage message={errorMsg} onDismiss={() => {setErrorMsg("")}} />}
         <h1 className="text-2xl font-bold mb-4">Multi-chain Wallet TX Checker</h1>
 

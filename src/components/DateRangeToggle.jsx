@@ -46,7 +46,7 @@ export default function DateRangeToggle({ onChange }) {
       </label>
 
       {enabled && (
-        <div className="mt-2 flex gap-4">
+        <div className="mt-2 flex gap-4 flex-wrap">
           <div>
             <label className="block text-sm">Start Date</label>
             <input
