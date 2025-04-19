@@ -10,7 +10,8 @@ export default async function handler(req, res) {
     const baseUrl = "https://api.etherscan.io/v2/api";
   
     const results = [];
-    for (const chain of chainsId) {
+    for (const i in chainsId) {
+      const chain = chainsId[i];
       const url = `${baseUrl}?` +
          `chainid=${chain}` +
          `&module=block` +
