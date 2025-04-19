@@ -33,8 +33,8 @@ export default async function handler(req, res) {
       }
 
       // Delay after every 5 requests (max api calls/sec in etherscan for free tier)
-      if ((i + 1) % 5 === 0) {
-        await wait(1100);
+      if ((+i + 1) % 5 === 0) {
+        await wait(1050);
       }
     }
   
