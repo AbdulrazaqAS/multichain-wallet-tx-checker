@@ -107,7 +107,7 @@ function fixBlockNumbersError(numbers, replaceWith){
 }
 
 export default function Home() {
-  const [address, setAddress] = useState("");
+  const [address, setAddress] = useState("0xE09b13f723f586bc2D98aa4B0F2C27A0320D20AB");
   const [selectedChains, setSelectedChains] = useState([]);
   const [incoming, setIncoming] = useState([]);
   const [outgoing, setOutgoing] = useState([]);
