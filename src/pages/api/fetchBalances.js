@@ -38,7 +38,10 @@ export default async function handler(req, res) {
 
     // Delay after every 5 requests (max api calls/sec in etherscan for free tier)
     if ((i + 1) % 5 === 0) {
+      const start = Date.now();
       await wait(1100);
+      const end = Date.now();
+      console.log("Waited for ", (end-start)/1000, "s while fetching balances");
     }
   }
   

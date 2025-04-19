@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function DateRangeToggle({ onChange }) {
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(true);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
@@ -21,6 +21,15 @@ export default function DateRangeToggle({ onChange }) {
     setEndDate(updated[1]);
     onChange({ start: updated[0], end: updated[1] });
   };
+
+  useEffect(() => {
+    const end = new Date(Date.now()).toISOString().split("T")[0];
+    const oneWeek = 1000 * 60 * 60 * 24 * 7;
+    const start = new Date(Date.now() - oneWeek).toISOString().split("T")[0];
+    setStartDate(start);
+    setEndDate(end);
+    onChange({ start, end });
+  }, [enabled]);
 
   return (
     <div className="my-4">
@@ -56,6 +65,7 @@ export default function DateRangeToggle({ onChange }) {
           </div>
         </div>
       )}
+      {!enabled && <p className="text-orange-500">Please select date range to avoid reaching max API capacity</p>}
     </div>
   );
 }

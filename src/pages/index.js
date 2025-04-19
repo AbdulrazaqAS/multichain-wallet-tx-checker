@@ -175,7 +175,7 @@ export default function Home() {
     try {
       if (address.length !== 42) throw InvalidWalletAddressError;
       if (selectedChains.length === 0) throw NoChainSelectedError;
-
+        console.log("Dates", dateRange);
         setErrorMsg("");  // clear prev error
         setIsFetchingBals(true);
         
@@ -243,7 +243,7 @@ export default function Home() {
               ))}
             </tbody>
           </table>
-          <h2 className="text-xl font-semibold mb-2">Incoming Transactions</h2>
+          <h2 className="text-xl font-semibold mb-2">Incoming Transactions ({incoming.length})</h2>
           <table className="w-full text-left border mb-8">
             <thead className="bg-gray-200">
               <tr>
@@ -267,7 +267,7 @@ export default function Home() {
             </tbody>
           </table>
 
-          <h2 className="text-xl font-semibold mb-2">Outgoing Transactions</h2>
+          <h2 className="text-xl font-semibold mb-2">Outgoing Transactions ({outgoing.length})</h2>
           <table className="w-full text-left border">
             <thead className="bg-gray-200">
               <tr>
