@@ -238,7 +238,7 @@ export default function Home() {
               {balances.map((tx, i) => (
                 <tr key={i} className="border-t">
                   <td className="p-2">
-                    {tx.bal != "-1" ? (parseFloat(tx.bal) / 1e18).toFixed(5) : "-1"} {getCurrency(tx.chainId)}
+                    {tx.bal != "-1" ? (parseFloat(tx.bal) / 1e18) : "-1"} {getCurrency(tx.chainId)}
                   </td>
                   <td className="p-2">{getChainName(tx.chainId)}</td>
                 </tr>
@@ -261,7 +261,7 @@ export default function Home() {
                 <tr key={i} className="border-t">
                   <td className="p-2 underline text-blue-500"><a href={getExplorerLink(tx.chainId, tx.hash)} target="_blank">{tx.hash.slice(0, 10) + "..." +tx.hash.slice(56)}</a></td>
                   <td className="p-2 truncate">{tx.from}</td>
-                  <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(5)} {getCurrency(tx.chainId)}</td>
+                  <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(8)} {getCurrency(tx.chainId)}</td>
                   <td className="p-2">{getChainName(tx.chainId)}</td>
                   <td className="p-2">{new Date(Number(tx.timeStamp) * 1000).toLocaleString()}</td>
                 </tr>
@@ -285,7 +285,7 @@ export default function Home() {
                 <tr key={i} className="border-t">
                   <td className="p-2 underline text-blue-500"><a href={getExplorerLink(tx.chainId, tx.hash)} target="_blank">{tx.hash.slice(0, 10) + "..." +tx.hash.slice(56)}</a></td>
                   <td className="p-2 truncate">{tx.to || "Contract Creation"}</td>
-                  <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(5)} {getCurrency(tx.chainId)}</td>
+                  <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(8)} {getCurrency(tx.chainId)}</td>
                   <td className="p-2">{getChainName(tx.chainId)}</td>
                   <td className="p-2">{new Date(Number(tx.timeStamp) * 1000).toLocaleString()}</td>
                 </tr>
