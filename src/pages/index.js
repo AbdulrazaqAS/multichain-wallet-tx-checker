@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CHAINS } from "@/utils/chainMap";
 
 import ChainSelector from "@/components/ChainSelector";
+import DateRangeToggle from "@/components/DateRangeToggle";
 import ErrorMessage from "@/components/ErrorMessage";
 
 function getExplorerLink(chainId, hash) {
@@ -18,10 +19,12 @@ function getCurrency(chainId) {
   return CHAINS.find(c => c.id === parseInt(chainId))?.currency || "Unknown";
 }
 
-async function fetchTransactionsFromServer(address, chains) {
+async function fetchTransactionsFromServer(address, chains, blockNumbers=null) {
   const query = new URLSearchParams({
     address,
-    chains: chains.join(',')
+    chains: chains.join(','),
+    startBlocks: blockNumbers ? blockNumbers[0].join(',') : "",
+    endBlocks: blockNumbers ? blockNumbers[1].join(',') : ""
   });
 
   const isDev = process.env.NODE_ENV === 'development';
@@ -29,7 +32,7 @@ async function fetchTransactionsFromServer(address, chains) {
         ? "http://localhost:5000/api/fetchTransactions"
         : "/api/fetchTransactions";
   const url = `${endpoint}?${query.toString()}`;
-
+  console.log("Url", url);
   try {
     const res = await fetch(url, {method: "POST"});
     const data = await res.json();
@@ -62,8 +65,51 @@ async function fetchBalancesFromServer(address, chains) {
   }
 }
 
+async function getBlockRangeFromDates(chains, startDate, endDate) {
+  const startTs = Math.floor(new Date(startDate).getTime() / 1000);
+  const endTs = Math.floor(new Date(endDate).getTime() / 1000);
+
+  const startQuery = new URLSearchParams({
+    timestamp: startTs,
+    chains: chains.join(',')
+  });
+
+  const endQuery = new URLSearchParams({
+    timestamp: endTs,
+    chains: chains.join(',')
+  });
+
+  const isDev = process.env.NODE_ENV === 'development';
+  const endpoint = isDev
+        ? "http://localhost:5000/api/getBlockNumberByTimestamp"
+        : "/api/getBlockNumberByTimestamp";
+
+  try {
+    const url1 = `${endpoint}?${startQuery.toString()}`;
+    const res1Promise = fetch(url1, {method: "POST"});
+
+    const url2 = `${endpoint}?${endQuery.toString()}`;
+    const res2Promise = fetch(url2, {method: "POST"});
+
+    const res = await Promise.all([res1Promise, res2Promise]);  // TODO: will api call per sec interrupt this?
+
+    const data1Promise = res[0].json()
+    const data2Promise = res[1].json()
+    const data = await Promise.all([data1Promise, data2Promise]);
+    
+    return data;
+  } catch (error) {
+    console.error("Fetch error:", error.message);
+    throw error;
+  }
+}
+
+function fixBlockNumbersError(numbers, replaceWith){
+  return numbers.map(num => num == '-1' ? replaceWith : num);
+}
+
 export default function Home() {
-  const [address, setAddress] = useState("0xE09b13f723f586bc2D98aa4B0F2C27A0320D20AB");
+  const [address, setAddress] = useState("");
   const [selectedChains, setSelectedChains] = useState([]);
   const [incoming, setIncoming] = useState([]);
   const [outgoing, setOutgoing] = useState([]);
@@ -71,23 +117,45 @@ export default function Home() {
   const [isFetchingTxs, setIsFetchingTxs] = useState(false);
   const [isFetchingBals, setIsFetchingBals] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [dateRange, setDateRange] = useState(null);
 
   const NoChainSelectedError = new Error("Please select at least one chain");
+  const InvalidDateRangeError = new Error("Invalid Date range");
+
   async function fetchTxs() {
     try {
       if (selectedChains.length === 0) throw NoChainSelectedError;
-      
       setErrorMsg("");  // clear prev error
       setIsFetchingTxs(true);
+      
+      let blockNumbers;
+      if (dateRange){
+        const {start, end} = dateRange;
+        if (!start || !end) throw InvalidDateRangeError;
+
+        if (new Date(start).getTime() >= new Date(end).getTime()){
+          throw InvalidDateRangeError;
+        }
+        blockNumbers = await getBlockRangeFromDates(selectedChains, start, end);
+        console.log("Block Numbers", blockNumbers);
+        const startBlocks = fixBlockNumbersError(blockNumbers[0], "0");
+        const endBlocks = fixBlockNumbersError(blockNumbers[1], "latest");
+        blockNumbers = [startBlocks, endBlocks]
+        console.log("Block Numbers", blockNumbers);
+      }
+      
+
       let allIncoming = [];
       let allOutgoing = [];
       
-      const txs = await fetchTransactionsFromServer(address, selectedChains);
+
+
+      const txs = await fetchTransactionsFromServer(address, selectedChains, blockNumbers);
       for (let i=0; i<selectedChains.length; i++) {
         const chainTxs = txs[i];
 
         if (chainTxs[0]?.error){
-          console.error(new Error(chainTxs[0].error));
+          console.error(`Error in chainId ${selectedChains[i]}:`, new Error(chainTxs[0].error));
           continue;
         }
 
@@ -138,6 +206,8 @@ export default function Home() {
         />
 
         <ChainSelector selectedChains={selectedChains} onSelectedChainsChange={setSelectedChains} />
+        <hr />
+        <DateRangeToggle onChange={setDateRange} />
 
         <div className="flex flex-wrap gap-5">
           <button
