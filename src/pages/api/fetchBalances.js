@@ -35,7 +35,7 @@ export default async function handler(req, res) {
       console.error(`Error on chain ${chain}:`, error.message);
       results.push("-1");
     }
-
+    console.log("Chain index:", i, (i + 1) % 5 === 0);
     // Delay after every 5 requests (max api calls/sec in etherscan for free tier)
     if ((i + 1) % 5 === 0) {
       const start = Date.now();

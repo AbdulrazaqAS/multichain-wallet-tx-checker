@@ -23,6 +23,8 @@ export default function DateRangeToggle({ onChange }) {
   };
 
   useEffect(() => {
+    if (!enabled) return;
+    
     const end = new Date(Date.now()).toISOString().split("T")[0];
     const oneWeek = 1000 * 60 * 60 * 24 * 7;
     const start = new Date(Date.now() - oneWeek).toISOString().split("T")[0];
