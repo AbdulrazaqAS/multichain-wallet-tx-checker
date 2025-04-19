@@ -4,6 +4,7 @@ import { CHAINS } from "@/utils/chainMap";
 import ChainSelector from "@/components/ChainSelector";
 import DateRangeToggle from "@/components/DateRangeToggle";
 import ErrorMessage from "@/components/ErrorMessage";
+import Footer from "@/components/Footer";
 
 function getExplorerLink(chainId, hash) {
   const chain = CHAINS.find(c => c.id === parseInt(chainId));
@@ -175,13 +176,13 @@ export default function Home() {
     try {
       if (address.length !== 42) throw InvalidWalletAddressError;
       if (selectedChains.length === 0) throw NoChainSelectedError;
-        console.log("Dates", dateRange);
-        setErrorMsg("");  // clear prev error
-        setIsFetchingBals(true);
-        
-        let bals = await fetchBalancesFromServer(address, selectedChains);
-        bals = bals.map((bal, i) => ({ bal, chainId: selectedChains[i] }));
-        setBalances(bals);
+
+      setErrorMsg("");  // clear prev error
+      setIsFetchingBals(true);
+      
+      let bals = await fetchBalancesFromServer(address, selectedChains);
+      bals = bals.map((bal, i) => ({ bal, chainId: selectedChains[i] }));
+      setBalances(bals);
     } catch(error){
       setErrorMsg(error.message);
     } finally {
@@ -190,10 +191,10 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 p-10">
+    <main className="min-h-screen bg-gray-100 p-10 pb-0">
       <div className="max-w-max mx-auto bg-white rounded-lg shadow-md p-6">
         {errorMsg && <ErrorMessage message={errorMsg} onDismiss={() => {setErrorMsg("")}} />}
-        <h1 className="text-2xl font-bold mb-4">Wallet TX Checker</h1>
+        <h1 className="text-2xl font-bold mb-4">Multi-chain Wallet TX Checker</h1>
 
         <input
           placeholder="0x......"
@@ -209,14 +210,14 @@ export default function Home() {
         <div className="flex flex-wrap gap-5">
           <button
             onClick={fetchTxs}
-            disabled={isFetchingTxs}
+            disabled={isFetchingTxs || isFetchingBals}
             className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {isFetchingTxs ? "Fetching..." : "Fetch Txs"}
           </button>
           <button
             onClick={fetchBals}
-            disabled={isFetchingBals}
+            disabled={isFetchingBals || isFetchingTxs}
             className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {isFetchingBals ? "Fetching..." : "Fetch Bals"}
@@ -244,54 +245,59 @@ export default function Home() {
             </tbody>
           </table>
           <h2 className="text-xl font-semibold mb-2">Incoming Transactions ({incoming.length})</h2>
-          <table className="w-full text-left border mb-8">
-            <thead className="bg-gray-200">
-              <tr>
-                <th className="p-2">Hash</th>
-                <th className="p-2">From</th>
-                <th className="p-2">Value</th>
-                <th className="p-2">Chain</th>
-                <th className="p-2">Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {incoming.map((tx, i) => (
-                <tr key={i} className="border-t">
-                  <td className="p-2 underline text-blue-500"><a href={getExplorerLink(tx.chainId, tx.hash)} target="_blank">{tx.hash.slice(0, 10) + "..." +tx.hash.slice(56)}</a></td>
-                  <td className="p-2 truncate">{tx.from}</td>
-                  <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(8)} {getCurrency(tx.chainId)}</td>
-                  <td className="p-2">{getChainName(tx.chainId)}</td>
-                  <td className="p-2">{new Date(Number(tx.timeStamp) * 1000).toLocaleString()}</td>
+          <div className="max-h-140 overflow-auto">
+            <table className="w-full text-left border mb-2">
+              <thead className="bg-gray-200">
+                <tr>
+                  <th className="p-2">Hash</th>
+                  <th className="p-2">From</th>
+                  <th className="p-2">Value</th>
+                  <th className="p-2">Chain</th>
+                  <th className="p-2">Time</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {incoming.map((tx, i) => (
+                  <tr key={i} className="border-t">
+                    <td className="p-2 underline text-blue-500"><a href={getExplorerLink(tx.chainId, tx.hash)} target="_blank">{tx.hash.slice(0, 10) + "..." +tx.hash.slice(56)}</a></td>
+                    <td className="p-2 truncate">{tx.from}</td>
+                    <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(8)} {getCurrency(tx.chainId)}</td>
+                    <td className="p-2">{getChainName(tx.chainId)}</td>
+                    <td className="p-2">{new Date(Number(tx.timeStamp) * 1000).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-          <h2 className="text-xl font-semibold mb-2">Outgoing Transactions ({outgoing.length})</h2>
-          <table className="w-full text-left border">
-            <thead className="bg-gray-200">
-              <tr>
-                <th className="p-2">Hash</th>
-                <th className="p-2">To</th>
-                <th className="p-2">Value</th>
-                <th className="p-2">Chain</th>
-                <th className="p-2">Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {outgoing.map((tx, i) => (
-                <tr key={i} className="border-t">
-                  <td className="p-2 underline text-blue-500"><a href={getExplorerLink(tx.chainId, tx.hash)} target="_blank">{tx.hash.slice(0, 10) + "..." +tx.hash.slice(56)}</a></td>
-                  <td className="p-2 truncate">{tx.to || "Contract Creation"}</td>
-                  <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(8)} {getCurrency(tx.chainId)}</td>
-                  <td className="p-2">{getChainName(tx.chainId)}</td>
-                  <td className="p-2">{new Date(Number(tx.timeStamp) * 1000).toLocaleString()}</td>
+          <h2 className="text-xl font-semibold mb-2 mt-8">Outgoing Transactions ({outgoing.length})</h2>
+          <div className="max-h-140 overflow-auto">
+            <table className="w-full text-left border">
+              <thead className="bg-gray-200">
+                <tr>
+                  <th className="p-2">Hash</th>
+                  <th className="p-2">To</th>
+                  <th className="p-2">Value</th>
+                  <th className="p-2">Chain</th>
+                  <th className="p-2">Time</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {outgoing.map((tx, i) => (
+                  <tr key={i} className="border-t">
+                    <td className="p-2 underline text-blue-500"><a href={getExplorerLink(tx.chainId, tx.hash)} target="_blank">{tx.hash.slice(0, 10) + "..." +tx.hash.slice(56)}</a></td>
+                    <td className="p-2 truncate">{tx.to || "Contract Creation"}</td>
+                    <td className="p-2">{(parseFloat(tx.value) / 1e18).toFixed(8)} {getCurrency(tx.chainId)}</td>
+                    <td className="p-2">{getChainName(tx.chainId)}</td>
+                    <td className="p-2">{new Date(Number(tx.timeStamp) * 1000).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
+      <Footer />
     </main>
   );
 }

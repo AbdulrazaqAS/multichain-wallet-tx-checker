@@ -35,13 +35,10 @@ export default async function handler(req, res) {
       console.error(`Error on chain ${chain}:`, error.message);
       results.push("-1");
     }
-    console.log("Chain index:", i, (i + 1) % 5 === 0);
+
     // Delay after every 5 requests (max api calls/sec in etherscan for free tier)
     if ((+i + 1) % 5 === 0) {
-      const start = Date.now();
-      await wait(1050);
-      const end = Date.now();
-      console.log("Waited for ", (end-start)/1000, "s while fetching balances");
+      await wait(1010);
     }
   }
   

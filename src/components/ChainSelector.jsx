@@ -21,7 +21,7 @@ export default function ChainSelector({ selectedChains, onSelectedChainsChange }
           </label>
         ))}
       </div>
-      {selectedChains.length > 5 && <p className="text-orange-500">Please select fewer chains to avoid reaching max API capacity</p>}
+      {selectedChains.length > 5 && <p className="text-orange-500">If fetching txs, please select fewer chains to avoid reaching max API capacity.</p>}
     </div>
   );
 }

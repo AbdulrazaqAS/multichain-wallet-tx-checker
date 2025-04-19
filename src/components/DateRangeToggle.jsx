@@ -67,7 +67,7 @@ export default function DateRangeToggle({ onChange }) {
           </div>
         </div>
       )}
-      {!enabled && <p className="text-orange-500">Please select date range to avoid reaching max API capacity</p>}
+      {!enabled && <p className="text-orange-500">If fetching txs, please add date range to avoid reaching max API capacity</p>}
     </div>
   );
 }
