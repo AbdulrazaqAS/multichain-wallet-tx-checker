@@ -29,7 +29,6 @@ app.post("/api/fetchTransactions", async (req, res) => {
             `&sort=desc` +
             `&apikey=${apiKey}`;
 
-        console.log("Url ", i, url);
         try {
           const res = await fetch(url);
           const data = await res.json();
