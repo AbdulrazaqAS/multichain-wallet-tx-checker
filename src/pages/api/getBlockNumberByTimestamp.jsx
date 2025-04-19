@@ -1,3 +1,7 @@
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export default async function handler(req, res) {
     const { chains, timestamp, closest = "before" } = req.query;
     const chainsId = chains.split(',')
@@ -25,6 +29,11 @@ export default async function handler(req, res) {
       } catch (error) {
         console.error(`Error on chain ${chain}:`, error.message);
         results.push("-1");
+      }
+
+      // Delay after every 5 requests (max api calls/sec in etherscan for free tier)
+      if ((i + 1) % 5 === 0) {
+        await wait(1100);
       }
     }
   
