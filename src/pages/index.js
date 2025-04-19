@@ -32,7 +32,7 @@ async function fetchTransactionsFromServer(address, chains, blockNumbers=null) {
         ? "http://localhost:5000/api/fetchTransactions"
         : "/api/fetchTransactions";
   const url = `${endpoint}?${query.toString()}`;
-  console.log("Url", url);
+
   try {
     const res = await fetch(url, {method: "POST"});
     const data = await res.json();
@@ -120,11 +120,14 @@ export default function Home() {
   const [dateRange, setDateRange] = useState(null);
 
   const NoChainSelectedError = new Error("Please select at least one chain");
+  const InvalidWalletAddressError = new Error("Invalid wallet address");
   const InvalidDateRangeError = new Error("Invalid Date range");
 
   async function fetchTxs() {
     try {
+      if (address.length !== 42) throw InvalidWalletAddressError;
       if (selectedChains.length === 0) throw NoChainSelectedError;
+      
       setErrorMsg("");  // clear prev error
       setIsFetchingTxs(true);
       
@@ -137,19 +140,14 @@ export default function Home() {
           throw InvalidDateRangeError;
         }
         blockNumbers = await getBlockRangeFromDates(selectedChains, start, end);
-        console.log("Block Numbers", blockNumbers);
         const startBlocks = fixBlockNumbersError(blockNumbers[0], "0");
         const endBlocks = fixBlockNumbersError(blockNumbers[1], "latest");
         blockNumbers = [startBlocks, endBlocks]
-        console.log("Block Numbers", blockNumbers);
       }
       
-
       let allIncoming = [];
       let allOutgoing = [];
       
-
-
       const txs = await fetchTransactionsFromServer(address, selectedChains, blockNumbers);
       for (let i=0; i<selectedChains.length; i++) {
         const chainTxs = txs[i];
@@ -177,6 +175,7 @@ export default function Home() {
   
   async function fetchBals() {
     try {
+      if (address.length !== 42) throw InvalidWalletAddressError;
       if (selectedChains.length === 0) throw NoChainSelectedError;
 
         setErrorMsg("");  // clear prev error
@@ -199,7 +198,7 @@ export default function Home() {
         <h1 className="text-2xl font-bold mb-4">Wallet TX Checker</h1>
 
         <input
-          placeholder="Wallet address"
+          placeholder="0x......"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
           className="w-full border px-3 py-2 mb-4 rounded"
