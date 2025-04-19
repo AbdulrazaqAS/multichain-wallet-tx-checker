@@ -86,15 +86,13 @@ async function getBlockRangeFromDates(chains, startDate, endDate) {
 
   try {
     const url1 = `${endpoint}?${startQuery.toString()}`;
-    const res1Promise = fetch(url1, {method: "POST"});
+    const res1 = await fetch(url1, {method: "POST"});
 
     const url2 = `${endpoint}?${endQuery.toString()}`;
-    const res2Promise = fetch(url2, {method: "POST"});
+    const res2 = await fetch(url2, {method: "POST"});
 
-    const res = await Promise.all([res1Promise, res2Promise]);  // TODO: will api call per sec interrupt this?
-
-    const data1Promise = res[0].json()
-    const data2Promise = res[1].json()
+    const data1Promise = res1.json()
+    const data2Promise = res2.json()
     const data = await Promise.all([data1Promise, data2Promise]);
     
     return data;
